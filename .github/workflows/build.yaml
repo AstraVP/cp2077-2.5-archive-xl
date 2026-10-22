@@ -1,0 +1,52 @@
+
+name: ArchiveXL Cyberpunk 2.5 Build
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: windows-2022
+
+    steps:
+      - name: Checkout source and submodules
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Use Cyberpunk 2.5 RED4ext SDK
+        shell: pwsh
+        run: |
+          git -C vendor/RED4ext.SDK fetch --depth=1 https://github.com/wopss/RED4ext.SDK.git master
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+          git -C vendor/RED4ext.SDK checkout --detach FETCH_HEAD
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+          $callback = Get-Content vendor/RED4ext.SDK/include/RED4ext/Callback.hpp -Raw
+          if ($callback -notmatch 'DefaultFixedCallbackBufferSize\s*=\s*64') {
+            throw "SDK does not contain the Cyberpunk 2.5 callback layout"
+          }
+
+      - name: Install Xmake
+        uses: xmake-io/github-action-setup-xmake@v1
+        with:
+          xmake-version: latest
+
+      - name: Configure Release build
+        run: xmake f -p windows -a x64 -m release -y
+
+      - name: Build ArchiveXL
+        run: xmake -vD -y
+
+      - name: Upload compiled DLL
+        uses: actions/upload-artifact@v4
+        with:
+          name: ArchiveXL-Cyberpunk-2.5-test
+          path: build/**/ArchiveXL.dll
+          if-no-files-found: error
