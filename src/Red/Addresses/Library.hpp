@@ -92,7 +92,7 @@ constexpr uint32_t EntitySpawner_SpawnFromTemplate = 2509382878;
 constexpr uint32_t EntityTemplate_OnLoad = 2741376473;
 constexpr uint32_t EntityTemplate_FindAppearance = 36838056;
 
-constexpr uint32_t FactoryIndex_LoadFactoryAsync = 4199813831;
+constexpr uint32_t FactoryIndex_LoadFactoryAsync = 1931943018;
 constexpr uint32_t FactoryIndex_ResolveResource = 3040549301;
 
 constexpr uint32_t GameApplication_InitResourceDepot = 2923109755;
