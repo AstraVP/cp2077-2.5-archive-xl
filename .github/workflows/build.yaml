@@ -1,4 +1,3 @@
-
 name: ArchiveXL Cyberpunk 2.5 Build
 
 on:
@@ -19,18 +18,29 @@ jobs:
         with:
           submodules: recursive
 
-      - name: Use Cyberpunk 2.5 RED4ext SDK
+      - name: Use Cyberpunk 2.5 RED4ext SDK with class layouts
         shell: pwsh
         run: |
-          git -C vendor/RED4ext.SDK fetch --depth=1 https://github.com/wopss/RED4ext.SDK.git master
+          git -C vendor/RED4ext.SDK fetch --depth=1 https://github.com/KelpHect/RED4ext.SDK-psiberx.git patch-2.5-layouts
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
           git -C vendor/RED4ext.SDK checkout --detach FETCH_HEAD
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
+          $sdkCommit = git -C vendor/RED4ext.SDK rev-parse HEAD
+          if ($sdkCommit -ne 'b139fcbd51b1c391399662f9fbfc00c5977f7231') {
+            throw "Unexpected SDK commit: $sdkCommit"
+          }
+          Write-Host "SDK commit: $sdkCommit"
+
           $callback = Get-Content vendor/RED4ext.SDK/include/RED4ext/Callback.hpp -Raw
           if ($callback -notmatch 'DefaultFixedCallbackBufferSize\s*=\s*64') {
             throw "SDK does not contain the Cyberpunk 2.5 callback layout"
+          }
+
+          $vehicle = Get-Content vendor/RED4ext.SDK/include/RED4ext/Scripting/Natives/Generated/vehicle/BaseObject.hpp -Raw
+          if ($vehicle -notmatch 'RED4EXT_ASSERT_SIZE\(vehicle::BaseObject, 0xBC0\)') {
+            throw "SDK does not contain the Cyberpunk 2.5 class layouts"
           }
 
       - name: Install Xmake
@@ -44,9 +54,11 @@ jobs:
       - name: Build ArchiveXL
         run: xmake -vD -y
 
-      - name: Upload compiled DLL
+      - name: Upload compiled DLL and PDB
         uses: actions/upload-artifact@v4
         with:
-          name: ArchiveXL-Cyberpunk-2.5-test
-          path: build/**/ArchiveXL.dll
+          name: ArchiveXL-Cyberpunk-2.5-layouts-test
+          path: |
+            build/**/ArchiveXL.dll
+            build/**/ArchiveXL.pdb
           if-no-files-found: error
