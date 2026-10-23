@@ -330,10 +330,6 @@ bool App::WorldStreamingExtension::PatchSector(Red::world::StreamingSector* aSec
             {
                 meshDefinition->mesh.path = nodeMutation.resourcePath;
             }
-            else if (auto* instancedMeshDefinition = Red::Cast<Red::worldInstancedMeshNode>(nodeDefinition))
-            {
-                instancedMeshDefinition->mesh.path = nodeMutation.resourcePath;
-            }
             else if (auto* entityDefinition = Red::Cast<Red::worldEntityNode>(nodeDefinition))
             {
                 entityDefinition->entityTemplate.path = nodeMutation.resourcePath;
@@ -373,10 +369,6 @@ bool App::WorldStreamingExtension::PatchSector(Red::world::StreamingSector* aSec
             if (auto* meshDefinition = Red::Cast<Red::worldMeshNode>(nodeDefinition))
             {
                 meshDefinition->meshAppearance = nodeMutation.appearanceName;
-            }
-            else if (auto* instancedMeshDefinition = Red::Cast<Red::worldInstancedMeshNode>(nodeDefinition))
-            {
-                instancedMeshDefinition->meshAppearance = nodeMutation.appearanceName;
             }
             else if (auto* entityDefinition = Red::Cast<Red::worldEntityNode>(nodeDefinition))
             {
